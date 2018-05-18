@@ -1,0 +1,680 @@
+package nghiatien.com;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+
+public class Calculate {
+	String LSI;
+	int BW_READ_IMP = 0;
+	int BW_WRITE_IMP = 0;
+	int BW_READ_CPU = 0;
+	int BW_WRITE_CPU = 0;
+	int BW_READ_GSX = 0;
+	int BW_WRITE_GSX = 0;
+	
+	static final int H3_30_MAX_RATIO_IMP = 12;
+	static final int H3_30_MAX_RATIO_CPU = 12;
+	static final int H3_30_MAX_RATIO_GSX = 24;
+	
+	static final int H3_30_SETTING_UNIT_IMP = 2;
+	static final int H3_30_SETTING_UNIT_CPU = 2;
+	static final int H3_30_SETTING_UNIT_GSX = 4;
+	
+	static final int H3_20_MAX_RATIO_IMP = 12;
+	static final int H3_20_MAX_RATIO_CPU = 12;
+	static final int H3_20_MAX_RATIO_GSX = 1;
+	
+	static final int H3_20_SETTING_UNIT_IMP = 2;
+	static final int H3_20_SETTING_UNIT_CPU = 2;
+	static final int H3_20_SETTING_UNIT_GSX = 4;
+	
+	static final int M3_11_MAX_RATIO_IMP = 12;
+	static final int M3_11_MAX_RATIO_CPU = 12;
+	static final int M3_11_MAX_RATIO_GSX = 12;
+	
+	static final int M3_11_SETTING_UNIT_IMP = 2;
+	static final int M3_11_SETTING_UNIT_CPU = 2;
+	static final int M3_11_SETTING_UNIT_GSX = 2;
+	
+	double OPERATION_RATIO_IMP = 0.0;
+	double OPERATION_RATIO_CPU = 0.0;
+	double OPERATION_RATIO_GSX = 0.0;
+	
+	int TOTAL_BW_IMP = 0;
+	int TOTAL_BW_CPU = 0;
+	int TOTAL_BW_GSX = 0;
+	
+	int TOTAL_OPERATION_RATIO_IMP = 0;
+	int TOTAL_OPERATION_RATIO_CPU = 0;
+	int TOTAL_OPERATION_RATIO_GSX = 0;
+	
+	int TOTAL_RATIO_IMP = 0;
+	int TOTAL_RATIO_CPU = 0;
+	int TOTAL_RATIO_GSX = 0;
+	
+	int RATIO_READ_IMP = 0;
+	int RATIO_WRITE_IMP = 0;
+	int RATIO_READ_CPU = 0;
+	int RATIO_WRITE_CPU = 0;
+	int RATIO_READ_GSX = 0;
+	int RATIO_WRITE_GSX = 0;
+	
+	public double Total_BW(double a, double b) {
+		return (a + b);
+	}
+	
+	public int[] Choice_Nearest_Ratio(String LSI, String IP, int[] Input_Ratio) {
+		int Maximum_Ratio = 0;
+		int Setting_Unit_Ratio = 0;
+		int Output_Ratio[]= {0,0};
+		
+		Setting_Unit_Ratio = Get_Setting_Unit_Ratio(LSI,IP);
+		Maximum_Ratio = Get_Maximum_Ratio(LSI,IP);
+		
+		if((Input_Ratio[0] > Maximum_Ratio) || (Input_Ratio[1] > Maximum_Ratio) || (Setting_Unit_Ratio == 0) || (Maximum_Ratio == 0)) {
+			Output_Ratio[0] = 0;
+			Output_Ratio[1] = 0;
+			System.out.println("Cannot found choice the ratio");
+			return Output_Ratio;
+		} else {
+			for (int i = 0; i <= 1; i++)
+			{
+				while(Output_Ratio[i] <= Maximum_Ratio) {
+					if (Output_Ratio[i] >= Input_Ratio[i]) {
+						break;
+					} else {
+						Output_Ratio[i] = Output_Ratio[i] + Setting_Unit_Ratio;
+					}
+				}
+			}
+		}
+			return Output_Ratio;
+	}
+	
+	public ArrayList<IPRatio> ChoiceRWtRatio(String LSI, String IP, double inputRatio) {
+		int Maximum_Ratio = 0;
+		int Setting_Unit_Ratio = 0;
+		int limitRatio = 0;
+		
+		ArrayList<IPRatio> outputRatio = new ArrayList<IPRatio>();
+		
+		Setting_Unit_Ratio = Get_Setting_Unit_Ratio(LSI,IP);
+		Maximum_Ratio = Get_Maximum_Ratio(LSI,IP);
+		limitRatio = Maximum_Ratio / Setting_Unit_Ratio;
+		
+		if((inputRatio <= 0)|| (Setting_Unit_Ratio == 0) || (Maximum_Ratio == 0)) {
+			IPRatio ratio = new IPRatio(0,0);
+			outputRatio.add(0,ratio);
+			System.out.println("Cannot found choice the ratio");
+		} else if (( inputRatio - (double)limitRatio) >= 0) {
+			if(inputRatio < 1) {
+				IPRatio ratio = new IPRatio(1,limitRatio);
+				outputRatio.add(0,ratio);
+			} else if(inputRatio >= 1) {
+				IPRatio ratio = new IPRatio(limitRatio, 1);
+				outputRatio.add(0,ratio);
+			}
+		} else {
+			double diff = inputRatio - (int)inputRatio;
+			if (diff < 0.5) {
+				if(inputRatio < 1) {
+					IPRatio ratio = new IPRatio(1,(int)inputRatio);
+					outputRatio.add(0,ratio);
+				} else if(inputRatio >= 1) {
+					IPRatio ratio = new IPRatio((int)inputRatio, 1);
+					outputRatio.add(0,ratio);
+				}
+			} else if (diff == 0.5){
+				if(inputRatio < 1) {
+					IPRatio ratio = new IPRatio(1,(int)inputRatio);
+					IPRatio ratio1 = new IPRatio(1,(int)inputRatio + 1);
+					outputRatio.add(0,ratio);
+					outputRatio.add(0,ratio1);
+				} else if(inputRatio >= 1) {
+					IPRatio ratio = new IPRatio((int)inputRatio, 1);
+					IPRatio ratio1 = new IPRatio((int)inputRatio + 1, 1);
+					outputRatio.add(0,ratio);
+					outputRatio.add(0,ratio1);
+				}
+			} else {
+				if(inputRatio < 1) {
+					IPRatio ratio = new IPRatio(1,(int)inputRatio + 1);
+					outputRatio.add(0,ratio);
+				} else if(inputRatio >= 1) {
+					IPRatio ratio = new IPRatio((int)inputRatio + 1, 1);
+					outputRatio.add(0,ratio);
+				}
+			}
+		}
+			return outputRatio;
+	}
+	
+	public int find_gcd(int a, int b) {
+	    if (b == 0) {
+	    	return a;
+	    } else {
+	    	return find_gcd(b, a % b);
+	    }
+	}
+	
+	
+	
+///	public int[] Determine_Base_Ratio(int[] Input_Ratio) {
+//		
+//		int Output_Ratio[]= {0,0};
+//		final int gcd = find_gcd(Input_Ratio[0],Input_Ratio[1]);
+//		Output_Ratio[0] = Input_Ratio[0]/gcd;
+//		Output_Ratio[1] = Input_Ratio[1]/gcd;
+//		return Output_Ratio;
+//	}
+	
+	public IPRatio Determine_Base_Ratio(int ReadRatio, int WriteRatio) {
+		
+		int ReadBaseRatio = 0;
+		int WriteBaseRatio = 0;
+		final int gcd = find_gcd(ReadRatio,WriteRatio);
+		ReadBaseRatio = ReadRatio/gcd;
+		WriteBaseRatio = WriteRatio/gcd;
+		
+		IPRatio baseRatio = new IPRatio(ReadBaseRatio,WriteBaseRatio);
+		return baseRatio;
+	}
+	
+	public ArrayList<IPRatio> Candidates_Of_Operation_Ratio(String LSI, String IP, ArrayList<IPRatio> inputRatio) {
+		int Maximum_Ratio = 0;
+		int Setting_Unit_Ratio = 0;
+		int ReadRatioResult = 0;
+		int WriteRatioResult = 0;
+
+		
+		ArrayList<IPRatio> OutputRatio = new ArrayList<IPRatio>();
+		
+		Setting_Unit_Ratio = Get_Setting_Unit_Ratio(LSI,IP);
+		Maximum_Ratio = Get_Maximum_Ratio(LSI,IP);
+		
+		for(IPRatio a : inputRatio){
+			if((a.read == 0) || (a.write == 0)){
+				System.out.println("Cannot choice the operation ratio");
+			} else {
+				
+				int i = 1;
+				while (true) {
+					ReadRatioResult = a.read * Setting_Unit_Ratio*i;
+					WriteRatioResult = a.write * Setting_Unit_Ratio*i;
+					if((ReadRatioResult <= Maximum_Ratio) && (WriteRatioResult <= Maximum_Ratio)) {
+						IPRatio ratio = new IPRatio(ReadRatioResult,WriteRatioResult);
+						OutputRatio.add(ratio);
+						i++;
+					} else {
+						break;
+					}
+				}
+			}
+		}
+	return OutputRatio;
+	} 
+	
+	public ArrayList<Integer> Total_Of_Operation_Ratio(List<IPRatio> inputRatio) {
+		ArrayList<Integer> OutputRatio = new ArrayList<Integer>();
+		for(int i = 0; i < inputRatio.size(); i++){
+			int totalRatio = inputRatio.get(i).read + inputRatio.get(i).write;
+			OutputRatio.add(i,totalRatio);
+		}
+//		Collections.sort(OutputRatio);
+		return OutputRatio;
+	}
+	
+	public int Get_Setting_Unit_Ratio(String LSI, String IP) {
+		int Unit = 0;
+		
+		if (LSI.equals("H3_30")) {
+			if (IP.equals("IMP")){
+				Unit = H3_30_SETTING_UNIT_IMP;
+			} else if (IP.equals("CPU")) {
+				Unit = H3_30_SETTING_UNIT_CPU;
+			} else if (IP.equals("GSX")) {
+				Unit = H3_30_SETTING_UNIT_GSX; 
+			} else {
+				Unit = 0;
+				System.out.println("Cannot found IP");
+			}
+		} else if (LSI.equals("H3_20")) {
+			if (IP.equals("IMP")){
+				Unit = H3_20_SETTING_UNIT_IMP;
+			} else if (IP.equals("CPU")) {
+				Unit = H3_20_SETTING_UNIT_CPU;
+			} else if (IP.equals("GSX")) {
+				Unit = H3_20_SETTING_UNIT_GSX; 
+			} else {
+				Unit = 0;
+				System.out.println("Cannot found IP");
+			}
+		} else if (LSI.equals("M3_11")) {
+			if (IP.equals("IMP")){
+				Unit = M3_11_SETTING_UNIT_IMP;
+			} else if (IP.equals("CPU")) {
+				Unit = M3_11_SETTING_UNIT_CPU;
+			} else if (IP.equals("GSX")) {
+				Unit = M3_11_SETTING_UNIT_GSX; 
+			} else {
+				Unit = 0;
+				System.out.println("Cannot found IP");
+			}
+		} else {
+			Unit = 0;
+			System.out.println("Cannot found LSI");
+		}
+		return Unit;
+	}
+	
+	public int Get_Maximum_Ratio(String LSI, String IP) {
+		int Maximum_Ratio = 0;
+		
+		if (LSI.equals("H3_30")) {
+			if (IP.equals("IMP")){
+				Maximum_Ratio = H3_30_MAX_RATIO_IMP;
+			} else if (IP.equals("CPU")) {
+				Maximum_Ratio = H3_30_MAX_RATIO_CPU;
+			} else if (IP.equals("GSX")) {
+				Maximum_Ratio = H3_30_MAX_RATIO_GSX; 
+			} else {
+				Maximum_Ratio = 0;
+				System.out.println("Cannot found IP");
+			}
+		} else if (LSI.equals("H3_20")) {
+			if (IP.equals("IMP")){
+				Maximum_Ratio = H3_20_MAX_RATIO_IMP;
+			} else if (IP.equals("CPU")) {
+				Maximum_Ratio = H3_20_MAX_RATIO_CPU;
+			} else if (IP.equals("GSX")) {
+				Maximum_Ratio = H3_20_MAX_RATIO_GSX; 
+			} else {
+				Maximum_Ratio = 0;
+				System.out.println("Cannot found IP");
+			}
+		} else if (LSI.equals("M3_11")) {
+			if (IP.equals("IMP")){
+				Maximum_Ratio = M3_11_MAX_RATIO_IMP;
+			} else if (IP.equals("CPU")) {
+				Maximum_Ratio = M3_11_MAX_RATIO_CPU;
+			} else if (IP.equals("GSX")) {
+				Maximum_Ratio = M3_11_MAX_RATIO_GSX; 
+			} else {
+				Maximum_Ratio = 0;
+				System.out.println("Cannot found IP");
+			}
+		} else {
+			Maximum_Ratio = 0;
+			System.out.println("Cannot found LSI");
+		}
+		return Maximum_Ratio;
+	}
+	
+	public double round(double value, int precision) {
+		int scale = (int) Math.pow(10, precision);
+	return (double) Math.round(value * scale) / scale;
+	}	
+	
+	public String Ratio_Calculate(int a, int b) {
+		String S_ratio = null;
+		double ratio = 0.0;
+		if((a==0)||(b==0)) {
+			System.out.println("Cannot calculate the ratio");
+		}
+		else {
+			if(a < b) {
+				ratio = (double)b/(double)a;
+				ratio = round(ratio,1);
+				S_ratio = "1 : " + String.valueOf(ratio);
+			} else {
+				ratio = (double)a/(double)b;
+				ratio = round(ratio,1);
+				S_ratio = String.valueOf(ratio) + " : 1";
+			}
+		}
+
+	return S_ratio;
+	}
+	
+	public double Ratio_2_Calculate(double a, double b) {
+		double ratio = 0.0;
+		if((a==0)||(b==0)) {
+			System.out.println("Cannot calculate the ratio");
+		}
+		else {
+			ratio = (double)a/(double)b;
+			ratio = round(ratio,1);
+			}
+	return ratio;
+	}
+	
+	public double roundHalf(double number) {
+	    double diff = number - (int)number;
+	    if (diff < 0.5) return (int)number;
+	    else return (int)number + 1;
+	}
+	
+	public String Ratio_3_Calculate(double a, double b, double c) {
+		String S_3_ratio = null;
+		double ratio1 = 0.0;
+		double ratio2 = 0.0;
+		double min = 0.0;
+		if((a==0)||(b==0)||(c==0)) {
+			System.out.println("Cannot calculate the ratio");
+		} else {
+			min = Math.min(Math.min(a,b),c);
+			if (min == a) {
+				ratio1 = Ratio_2_Calculate(a,b);
+				ratio2 = Ratio_2_Calculate(a,c);
+				S_3_ratio = "1 : " + String.valueOf(ratio1) + " : " + String.valueOf(ratio2);
+			} else if (min == b) {
+				ratio1 = Ratio_2_Calculate(b,a);
+				ratio2 = Ratio_2_Calculate(b,c);
+				S_3_ratio =  String.valueOf(ratio1) + " : 1 : "+String.valueOf(ratio2);
+			} else {
+				ratio1 = Ratio_2_Calculate(c,a);
+				ratio2 = Ratio_2_Calculate(c,b);
+				S_3_ratio = String.valueOf(ratio1) + " : " + String.valueOf(ratio2) + " : 1";
+			}
+		}
+		
+		return S_3_ratio;
+	}
+	
+	public String Ratio_3(int a, int b, int c) {
+		String S_3_ratio = null;
+		int tgcd = 0;
+		if((a==0)||(b==0)||(c==0)) {
+			System.out.println("Cannot calculate the ratio");
+		} else {
+			tgcd = find_gcd(a,find_gcd(b,c));
+				S_3_ratio = String.valueOf(a/tgcd) + " : " + String.valueOf(b/tgcd) + " : "+String.valueOf(c/tgcd);
+		}
+		return S_3_ratio;
+	}
+	
+	public int getMaxValueOfArrayList(ArrayList<Integer> list) {
+		int MaxVal = list.get(0);
+		int indexOfMax = 0;
+		for (int i = 0; i < list.size(); i++) {
+			if(list.get(i) > MaxVal) {
+				MaxVal = list.get(i);
+				indexOfMax = i;
+			}
+		}
+		return indexOfMax;
+	}
+	
+	public int getMinValueOfArrayList(ArrayList<Integer> list) {
+		int MinVal = list.get(0);
+		int indexOfMin = 0;
+		for (int i = 0; i < list.size(); i++) {
+			if(list.get(i) < MinVal) {
+				MinVal = list.get(i);
+				indexOfMin = i;
+			}
+		}
+		return indexOfMin;
+	}
+	
+	public boolean CheckLimit(double aBW, double bBW, ArrayList<Integer> a, ArrayList<Integer> b ) {
+		int maxRatio = 0;
+		int minRatio = 0;
+		double limitRatio = 0;
+		double maxBW = 0;
+		double minBW = 0;
+		double limitBWRatio = 0;
+		
+		if (aBW > bBW) {
+			maxBW = aBW;
+			minBW = bBW;
+			maxRatio = a.get(a.size()-1);
+			minRatio = b.get(0);
+		} else {
+			maxBW = bBW;
+			minBW = aBW;
+			maxRatio = b.get(a.size()-1);
+			minRatio = a.get(0);
+		}
+		
+		limitRatio= (double) maxRatio/(double) minRatio;
+		limitBWRatio = (double) maxBW/(double) minBW;
+		
+		if ( limitRatio < limitBWRatio) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public String findIPMaxBW (double a, double b, double c) {
+		String IP = "IMP";
+		double maximumValue = a;
+		
+		if (b > maximumValue) {
+			IP = "CPU";
+			maximumValue = b;
+		}
+		if (c > maximumValue) {
+			IP = "GSX";
+		}
+		return IP;
+	}
+	
+	public ArrayList<ChoiceCase> CalculateDeltaDiff3 (double impBW, double cpuBW, double gsxBW, ArrayList<Integer> impRatio, ArrayList<Integer> cpuRatio, ArrayList<Integer> gsxRatio){
+		double diffA = 0; // IMP/CPU
+		double diffB = 0; // IMP/GSX
+		double diffC = 0; // CPU/GSX
+		double deltaDiff = 0; // deltaDiff = diffA + diffB + diffC 
+		
+		double ratioA = (double) impBW/(double) cpuBW;
+		double ratioB = (double) impBW/(double) gsxBW;
+		double ratioC = (double) cpuBW/(double) gsxBW;
+		
+		ArrayList<ChoiceCase> listCase = new ArrayList<ChoiceCase>();
+		
+		for (int i = 0; i < impRatio.size(); i++) {
+			for (int j = 0; j < cpuRatio.size(); j++) {				
+				for (int k = 0; k < gsxRatio.size(); k++) {
+					diffA = Math.abs(ratioA - ((double) impRatio.get(i) / (double) cpuRatio.get(j)));
+					diffB = Math.abs(ratioB - ((double) impRatio.get(i) / (double) gsxRatio.get(k)));
+					diffC = Math.abs(ratioC - ((double) cpuRatio.get(j) / (double) gsxRatio.get(k)));
+					
+					deltaDiff = diffA + diffB + diffC;
+					
+					ChoiceCase choiceCase = new ChoiceCase(deltaDiff, i, j, k);
+					listCase.add(choiceCase);
+				}
+			}
+		}
+		return listCase;
+	}
+	
+	public ArrayList<ChoiceCase2> CalculateDeltaDiff2 (double aBW, double bBW, ArrayList<Integer> aRatio, ArrayList<Integer> bRatio){
+		double deltaDiff = 0; // |aBW/bBW - aRatio/bRatio|
+		double ratio = (double) aBW/(double) bBW;
+		ArrayList<ChoiceCase2> listCase = new ArrayList<ChoiceCase2>();
+		
+		for (int i = 0; i < aRatio.size(); i++) {
+			for (int j = 1; j < bRatio.size(); j++) {				
+				deltaDiff = Math.abs(ratio - ((double) aRatio.get(i) / (double) bRatio.get(j)));
+				ChoiceCase2 choiceCase = new ChoiceCase2(deltaDiff, i, j);
+				listCase.add(choiceCase);
+				}
+			}
+		return listCase;
+	}
+	
+	public ArrayList<ChoiceCase2> ProposeCase(ArrayList<ChoiceCase2> listCase){
+		ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+		listCase.sort(Comparator.comparingDouble(ChoiceCase2::getDeltaDiff));
+		
+		ChoiceCase2 choiceCase;
+		choiceCase = new ChoiceCase2(listCase.get(0).deltaDiff, listCase.get(0).posA, listCase.get(0).posB);
+		proposeCase.add(0, choiceCase );
+		
+		for(int i = 1; i < listCase.size(); i++) {
+			int count = 1;
+			if((listCase.get(i).deltaDiff - listCase.get(i-1).deltaDiff) == 0) {
+				count = count + 1;
+				choiceCase = new ChoiceCase2(listCase.get(i).deltaDiff, listCase.get(i).posA, listCase.get(i).posB);
+				proposeCase.add(i, choiceCase);
+			}
+			while (count <= 4) {
+				if((listCase.get(i).deltaDiff - listCase.get(i-1).deltaDiff) > 0) {
+					count = count + 1;
+					choiceCase = new ChoiceCase2(listCase.get(i).deltaDiff, listCase.get(i).posA, listCase.get(i).posB);
+					proposeCase.add(choiceCase);
+				}
+			}
+		}
+		return proposeCase;
+	}
+	
+	public ArrayList<OperationRatio> Propose4BestCase(ArrayList<ChoiceCase> listCase){
+		ArrayList<OperationRatio> proposeCase = new ArrayList<OperationRatio>();
+		listCase.sort(Comparator.comparingDouble(ChoiceCase::getDeltaDiff));
+		
+		for(int i = 0; i < 4; i++) {
+			OperationRatio choiceCase = new OperationRatio(listCase.get(i).posIMP, listCase.get(i).posCPU, listCase.get(i).posGSX);
+			proposeCase.add(choiceCase);
+		}
+		return proposeCase;
+	}
+	public ArrayList<OperationRatio> DetermineTotalBERatio(ArrayList<OperationRatio> posRatio, ArrayList<Integer> ratioA, ArrayList<Integer> ratioB, ArrayList<Integer> ratioC ){
+		ArrayList<OperationRatio> OutputRatio = new ArrayList<OperationRatio>();
+		for(int i = 0; i < posRatio.size(); i++) {
+			int ratioIMP = ratioA.get(posRatio.get(i).imp);
+			int ratioCPU = ratioB.get(posRatio.get(i).cpu);
+			int ratioGSX = ratioC.get(posRatio.get(i).gsx);
+				
+			OperationRatio choiceCase = new OperationRatio(ratioIMP, ratioCPU, ratioGSX);
+			OutputRatio.add(choiceCase);
+		}
+	return OutputRatio;
+	}
+	
+	public ArrayList<BERatio> DetermineBERatio(ArrayList<OperationRatio> posRatio, ArrayList<Integer> ratioA, ArrayList<Integer> ratioB, ArrayList<Integer> ratioC ){
+		ArrayList<BERatio> OutputRatio = new ArrayList<BERatio>();
+		for(int i = 0; i < posRatio.size(); i++) {
+			int ratioIMP = ratioA.get(posRatio.get(i).imp);
+			int ratioCPU = ratioB.get(posRatio.get(i).cpu);
+			int ratioGSX = ratioC.get(posRatio.get(i).gsx);
+				
+			OperationRatio choiceCase = new OperationRatio(ratioIMP, ratioCPU, ratioGSX);
+		}
+	return OutputRatio;
+	}
+	
+	public ArrayList<OperationRatio> Dertermine_Operation_Ratio (double impBW, double cpuBW, double gsxBW, ArrayList<Integer> impRatio, ArrayList<Integer> cpuRatio, ArrayList<Integer> gsxRatio){
+		ArrayList<OperationRatio> OutputRatio = new ArrayList<OperationRatio>();
+		String maxIP;
+		boolean x;
+		boolean y;
+		maxIP = findIPMaxBW(impBW, cpuBW, gsxBW);
+		
+		if (maxIP.equals("IMP")) {
+			x = CheckLimit(impBW, cpuBW, impRatio, cpuRatio);
+			y = CheckLimit(impBW, gsxBW, impRatio, gsxRatio);
+			if ((x &&y)== true) {
+				int a = getMaxValueOfArrayList(impRatio);
+				ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+				proposeCase = ProposeCase(CalculateDeltaDiff2(cpuBW, gsxBW, cpuRatio, gsxRatio));
+				for (int i = 0; i <proposeCase.size(); i++) {
+					OperationRatio selectCase = new OperationRatio(a, proposeCase.get(i).posA, proposeCase.get(i).posB);
+					OutputRatio.add(i,selectCase);
+				}
+			} else if ((x^y) == true){
+				if(x == true) {
+					int a = getMinValueOfArrayList(cpuRatio);
+					ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+					proposeCase = ProposeCase(CalculateDeltaDiff2(impBW, gsxBW, impRatio, gsxRatio));
+					for (int i = 0; i <proposeCase.size(); i++) {
+						OperationRatio selectCase = new OperationRatio(proposeCase.get(i).posA, a , proposeCase.get(i).posB);
+						OutputRatio.add(i,selectCase);
+					}
+				} else {
+					int a = getMinValueOfArrayList(gsxRatio);
+					ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+					proposeCase = ProposeCase(CalculateDeltaDiff2(impBW, cpuBW, impRatio, cpuRatio));
+					for (int i = 0; i <proposeCase.size(); i++) {
+						OperationRatio selectCase = new OperationRatio(proposeCase.get(i).posA, proposeCase.get(i).posB, a);
+						OutputRatio.add(i,selectCase);
+					}
+				}
+			} else if ((x && y) == false) {
+				OutputRatio = Propose4BestCase(CalculateDeltaDiff3(impBW, cpuBW, gsxBW, impRatio, cpuRatio, gsxRatio));
+			}
+		} else if (maxIP.equals("CPU")) {
+			x = CheckLimit(cpuBW, impBW, cpuRatio, impRatio);
+			y = CheckLimit(cpuBW, gsxBW, cpuRatio, gsxRatio);
+			if ((x &&y)== true) {
+				int a = getMaxValueOfArrayList(cpuRatio);
+				ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+				proposeCase = ProposeCase(CalculateDeltaDiff2(impBW, gsxBW, impRatio, gsxRatio));
+				for (int i = 0; i <proposeCase.size(); i++) {
+					OperationRatio selectCase = new OperationRatio(proposeCase.get(i).posA, a, proposeCase.get(i).posB);
+					OutputRatio.add(i,selectCase);
+				}
+			} else if ((x^y) == true){
+				if(x == true) {
+					int a = getMinValueOfArrayList(impRatio);
+					ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+					proposeCase = ProposeCase(CalculateDeltaDiff2(cpuBW, gsxBW, cpuRatio, gsxRatio));
+					for (int i = 0; i <proposeCase.size(); i++) {
+						OperationRatio selectCase = new OperationRatio(a, proposeCase.get(i).posA, proposeCase.get(i).posB);
+						OutputRatio.add(i,selectCase);
+					}
+				} else {
+					int a = getMinValueOfArrayList(gsxRatio);
+					ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+					proposeCase = ProposeCase(CalculateDeltaDiff2(impBW, cpuBW, impRatio, cpuRatio));
+					for (int i = 0; i <proposeCase.size(); i++) {
+						OperationRatio selectCase = new OperationRatio(proposeCase.get(i).posA, proposeCase.get(i).posB, a);
+						OutputRatio.add(i,selectCase);
+					}
+				}
+			} else if ((x && y) == false) {
+				OutputRatio = Propose4BestCase(CalculateDeltaDiff3(impBW, cpuBW, gsxBW, impRatio, cpuRatio, gsxRatio));
+			}
+		} else if (maxIP.equals("GSX")) {
+			x = CheckLimit(gsxBW, impBW, gsxRatio, impRatio);
+			y = CheckLimit(gsxBW, cpuBW, gsxRatio, cpuRatio);
+			if ((x &&y)== true) {
+				int a = getMaxValueOfArrayList(gsxRatio);
+				ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+				proposeCase = ProposeCase(CalculateDeltaDiff2(impBW, cpuBW, impRatio, cpuRatio));
+				for (int i = 0; i <proposeCase.size(); i++) {
+					OperationRatio selectCase = new OperationRatio(proposeCase.get(i).posA, proposeCase.get(i).posB, a);
+					OutputRatio.add(i,selectCase);
+				}
+			} else if ((x^y) == true){
+				if(x == true) {
+					int a = getMinValueOfArrayList(impRatio);
+					ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+					proposeCase = ProposeCase(CalculateDeltaDiff2(cpuBW, gsxBW, cpuRatio, gsxRatio));
+					for (int i = 0; i <proposeCase.size(); i++) {
+						OperationRatio selectCase = new OperationRatio(a, proposeCase.get(i).posA, proposeCase.get(i).posB);
+						OutputRatio.add(i,selectCase);
+					}
+				} else {
+					int a = getMinValueOfArrayList(cpuRatio);
+					ArrayList<ChoiceCase2> proposeCase = new ArrayList<ChoiceCase2>();
+					proposeCase = ProposeCase(CalculateDeltaDiff2(impBW, gsxBW, impRatio, gsxRatio));
+					for (int i = 0; i <proposeCase.size(); i++) {
+						OperationRatio selectCase = new OperationRatio(proposeCase.get(i).posA, a, proposeCase.get(i).posB);
+						OutputRatio.add(i,selectCase);
+					}
+				}
+			} else if ((x && y) == false) {
+				OutputRatio = Propose4BestCase(CalculateDeltaDiff3(impBW, cpuBW, gsxBW, impRatio, cpuRatio, gsxRatio));
+			}
+		}
+		return OutputRatio;
+		
+
+	}
+}
