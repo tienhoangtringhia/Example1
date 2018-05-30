@@ -1,0 +1,16 @@
+Good afternoon every one.
+My name is Nghia, I’m come from R-Car System Solution Group, SPV team.
+My current task is Development of performance measurement relation tools and Performance verification of QoS setting.
+The status is OK now.
+Today, I will share with you some information about the web 3.0
+As you may know, 
+Web 1.0 is only allows people to read from the internet. It’s use as “information portal” and uses table to positions and align elements on page.
+Web 2.0 is a platform that give users the possibility to control their data, generated content, visitor can make changes to web pages. Everyone can be content procedure. You can link yourself to others user, example as social networking site like Facebook have made it easy for users to find each other and stay in touch. The internet can be accessed not only on your computer but also by other device as cell phones, tablet…
+While Web 2.0 uses the internet to make connections between people, web 3.0 will use it to make connections with information.
+Today, search engines are not able to understand what you are looking for. They look for search terms and key words that you have typed in. 
+Web 3.0 search engine will not only be able to find the keywords, it will also interpret the contents. It will therefore only return results that are relevant. Example you want to watch the movie in the theater and eat hot pot after that, you type movie and hot spot in browser, I will return you some results of the theater and hot spot restaurant around the theater. 
+Web 3.0 browser s will act like a personal assistant. As you search the web it will learn what kind of person you are and what you are interested in. The more you browse the web the more information the browser gets about you.
+Hope that this information is useful for you.
+Thank for your listening and have the nice working day.
+Thank you.
+
